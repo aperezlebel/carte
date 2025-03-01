@@ -138,7 +138,9 @@ class Table2GraphTransformer(TransformerMixin, BaseEstimator):
         else:
             self.num_col_names = []
 
-        self.col_names = self.cat_col_names + self.num_col_names
+        self.col_names = X.columns.astype(str).str.replace(
+            "\n", " ", regex=True
+        )
 
         self.num_transformer_ = PowerTransformer().set_output(transform="pandas")
 
@@ -176,10 +178,9 @@ class Table2GraphTransformer(TransformerMixin, BaseEstimator):
             else None
         )
 
+        X_.columns = self.col_names
         X_categorical = X_.select_dtypes(include="object").copy()
-        X_categorical.columns = self.cat_col_names
         X_numerical = X_.select_dtypes(exclude="object").copy()
-        X_numerical.columns = self.num_col_names
 
         cat_names = (
             pd.melt(X_categorical)["value"].dropna().astype(str).str.lower().unique()
